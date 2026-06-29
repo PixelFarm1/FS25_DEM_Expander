@@ -9,7 +9,7 @@ self.onmessage = async (e) => {
     const {
       imageBuffer,
       targetSize,
-      placement,
+      offset,
       fillMode,
       fillElevation,
       heightScale,
@@ -45,8 +45,9 @@ self.onmessage = async (e) => {
     log(`Source: ${srcW}×${srcH} px  |  Output: ${outSize}×${outSize} px`)
 
     // ── 4. Placement offset ───────────────────────────────────────────────────
-    const { ox, oy } = getOffset(placement, srcW, srcH, outSize, outSize)
-    log(`Placement: ${placement}  →  offset (${ox}, ${oy})`)
+    const ox = Math.round(offset.x)
+    const oy = Math.round(offset.y)
+    log(`Offset: (${ox}, ${oy}) px`)
 
     // ── 5. Allocate output buffer ─────────────────────────────────────────────
     const outPixels = new Uint16Array(outSize * outSize)
@@ -102,7 +103,7 @@ self.onmessage = async (e) => {
     const outPng = encode({ width: outSize, height: outSize, data: outPixels, depth: 16, channels: 1 })
 
     // ── 10. Build summary text ─────────────────────────────────────────────────
-    const summary = buildSummary({ srcW, srcH, outSize, targetSize, heightScale, unitsPerPixel, placement, fillMode, fillElevation })
+    const summary = buildSummary({ srcW, srcH, outSize, targetSize, heightScale, unitsPerPixel, ox, oy, fillMode, fillElevation })
 
     // ── 11. Create ZIP ────────────────────────────────────────────────────────
     log('Creating ZIP...')
@@ -126,17 +127,6 @@ function log(msg) {
   self.postMessage({ type: 'LOG', message: msg })
 }
 
-function getOffset(placement, srcW, srcH, outW, outH) {
-  switch (placement) {
-    case 'center':       return { ox: Math.round((outW - srcW) / 2), oy: Math.round((outH - srcH) / 2) }
-    case 'top-left':     return { ox: 0,          oy: 0           }
-    case 'top-right':    return { ox: outW - srcW, oy: 0           }
-    case 'bottom-left':  return { ox: 0,          oy: outH - srcH }
-    case 'bottom-right': return { ox: outW - srcW, oy: outH - srcH }
-    default:             return { ox: 0,          oy: 0           }
-  }
-}
-
 function mirrorCoord(c, size) {
   if (size <= 0) return 0
   if (c < 0)     return Math.min(-c, size - 1)
@@ -144,14 +134,14 @@ function mirrorCoord(c, size) {
   return c
 }
 
-function buildSummary({ srcW, srcH, outSize, targetSize, heightScale, unitsPerPixel, placement, fillMode, fillElevation }) {
+function buildSummary({ srcW, srcH, outSize, targetSize, heightScale, unitsPerPixel, ox, oy, fillMode, fillElevation }) {
   const lines = [
     '=== FS25 DEM Expander — Output Summary ===',
     '',
     `Source DEM:        ${srcW}×${srcH} px`,
     `Output DEM:        ${outSize}×${outSize} px`,
     `Target map size:   ${targetSize}m × ${targetSize}m`,
-    `Placement:         ${placement}`,
+    `Offset:            (${ox}, ${oy}) px`,
     `Fill mode:         ${fillMode}${fillMode === 'flat' ? ` (${fillElevation}m)` : ''}`,
     '',
     '--- Giants Editor (terrain properties) ---',

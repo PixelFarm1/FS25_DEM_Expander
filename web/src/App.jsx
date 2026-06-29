@@ -5,10 +5,23 @@ import PreviewCanvas from './components/PreviewCanvas.jsx'
 import { Badge } from './components/ui/badge.jsx'
 import { translations } from './i18n.js'
 
+// Compute pixel offset for a named preset
+function computePresetOffset(preset, srcW, srcH, outPx) {
+  switch (preset) {
+    case 'center':       return { x: Math.round((outPx - srcW) / 2), y: Math.round((outPx - srcH) / 2) }
+    case 'top-left':     return { x: 0,           y: 0            }
+    case 'top-right':    return { x: outPx - srcW, y: 0            }
+    case 'bottom-left':  return { x: 0,           y: outPx - srcH }
+    case 'bottom-right': return { x: outPx - srcW, y: outPx - srcH }
+    default:             return { x: 0,           y: 0            }
+  }
+}
+
 export default function App() {
   const [file,           setFile]           = useState(null)
   const [targetSize,     setTargetSize]     = useState(4096)
-  const [placement,      setPlacement]      = useState('center')
+  const [activePreset,   setActivePreset]   = useState('center')  // null when free-placed
+  const [offset,         setOffset]         = useState({ x: 0, y: 0 })
   const [fillMode,       setFillMode]       = useState('flat')
   const [fillElevation,  setFillElevation]  = useState(0)
   const [heightScale,    setHeightScale]    = useState(300)
@@ -24,6 +37,28 @@ export default function App() {
 
   const workerRef = useRef(null)
   const t = translations[lang]
+
+  // Derived: output pixel size
+  const outPx = Math.round(targetSize / unitsPerPixel) + 1
+
+  // When a preset is active, recompute offset whenever srcDims / outPx changes
+  useEffect(() => {
+    if (!activePreset || !srcDims) return
+    setOffset(computePresetOffset(activePreset, srcDims.w, srcDims.h, outPx))
+  }, [activePreset, srcDims, outPx])
+
+  function handlePresetClick(preset) {
+    setActivePreset(preset)
+    if (srcDims) setOffset(computePresetOffset(preset, srcDims.w, srcDims.h, outPx))
+  }
+
+  function handleOffsetChange(newOffset) {
+    // Clamp to valid range
+    const maxX = srcDims ? Math.max(0, outPx - srcDims.w) : 0
+    const maxY = srcDims ? Math.max(0, outPx - srcDims.h) : 0
+    setOffset({ x: Math.max(0, Math.min(maxX, newOffset.x)), y: Math.max(0, Math.min(maxY, newOffset.y)) })
+    setActivePreset(null)  // free placement — clear preset highlight
+  }
 
   const appendLog = useCallback((msg) => setLogs(prev => [...prev, msg]), [])
 
@@ -82,10 +117,15 @@ export default function App() {
     Promise.all([dimsPromise, bitmapPromise]).then(([dims, bmp]) => {
       setSrcDims(dims)
       setSrcBitmap(bmp)  // may be null if browser can't bitmap a 16-bit PNG
+      // Recompute offset for the active preset with the new dims
+      if (activePreset) {
+        const newOutPx = Math.round(targetSize / unitsPerPixel) + 1
+        setOffset(computePresetOffset(activePreset, dims.w, dims.h, newOutPx))
+      }
     }).catch(err => {
       console.error('Failed to read DEM file:', err)
     })
-  }, [file])
+  }, [file]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleRun() {
     if (!file || isRunning) return
@@ -97,7 +137,7 @@ export default function App() {
 
     const imageBuffer = await file.arrayBuffer()
     workerRef.current.postMessage(
-      { type: 'RUN', payload: { imageBuffer, targetSize, placement, fillMode, fillElevation, heightScale, unitsPerPixel } },
+      { type: 'RUN', payload: { imageBuffer, targetSize, offset, fillMode, fillElevation, heightScale, unitsPerPixel } },
       [imageBuffer]
     )
   }
@@ -153,7 +193,9 @@ export default function App() {
           <ControlsPanel
             file={file} onFile={setFile}
             targetSize={targetSize} setTargetSize={setTargetSize}
-            placement={placement} setPlacement={setPlacement}
+            activePreset={activePreset} onPresetClick={handlePresetClick}
+            offset={offset} onOffsetChange={handleOffsetChange}
+            srcDims={srcDims} outPx={outPx}
             fillMode={fillMode} setFillMode={setFillMode}
             fillElevation={fillElevation} setFillElevation={setFillElevation}
             heightScale={heightScale} setHeightScale={setHeightScale}
@@ -172,7 +214,9 @@ export default function App() {
             outputBitmap={outputBitmap}
             srcDims={srcDims}
             targetSize={targetSize}
-            placement={placement}
+            offset={offset}
+            onOffsetChange={handleOffsetChange}
+            outPx={outPx}
             unitsPerPixel={unitsPerPixel}
             isRunning={isRunning}
             t={t}

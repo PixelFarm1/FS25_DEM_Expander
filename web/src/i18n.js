@@ -20,6 +20,10 @@ export const translations = {
     unitsPerPixel:   'Units per pixel',
     uppTooltip:      'Meters of terrain per heightmap pixel. Must match your source map.',
 
+    xOffset:         'X offset (px)',
+    yOffset:         'Y offset (px)',
+    offsetTooltip:   'Pixel offset of the source DEM within the output canvas. Drag the preview or type values directly.',
+
     run:         'Run',
     running:     'Running...',
     downloadZip: 'Download .zip',
@@ -52,6 +56,10 @@ export const translations = {
     fillElevTooltip:    'Höhe in Metern für flache Füllung. Wird anhand der Höhenskala in einen Pixelwert umgerechnet.',
     unitsPerPixel:   'Einheiten pro Pixel',
     uppTooltip:      'Meter Gelände pro Heightmap-Pixel.',
+
+    xOffset:         'X-Versatz (px)',
+    yOffset:         'Y-Versatz (px)',
+    offsetTooltip:   'Pixelversatz des Quell-DEM auf der Ausgabeleinwand. Vorschau ziehen oder Werte eingeben.',
 
     run:         'Starten',
     running:     'Läuft...',

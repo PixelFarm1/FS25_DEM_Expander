@@ -19,7 +19,9 @@ const UPP_OPTIONS = [1, 2, 4]
 export default function ControlsPanel({
   file, onFile,
   targetSize, setTargetSize,
-  placement, setPlacement,
+  activePreset, onPresetClick,
+  offset, onOffsetChange,
+  srcDims, outPx,
   fillMode, setFillMode,
   fillElevation, setFillElevation,
   heightScale, setHeightScale,
@@ -94,7 +96,25 @@ export default function ControlsPanel({
       {/* Placement */}
       <section>
         <SectionLabel tooltip={t.placementTooltip}>{t.placement}</SectionLabel>
-        <PlacementGrid value={placement} onChange={setPlacement} />
+        <PlacementGrid activePreset={activePreset} onChange={onPresetClick} />
+
+        {/* X / Y offset inputs */}
+        <div className="mt-2 flex flex-col gap-1">
+          <OffsetInput
+            label={t.xOffset}
+            tooltip={t.offsetTooltip}
+            value={offset.x}
+            max={srcDims ? Math.max(0, outPx - srcDims.w) : 0}
+            onChange={v => onOffsetChange({ ...offset, x: v })}
+          />
+          <OffsetInput
+            label={t.yOffset}
+            tooltip={t.offsetTooltip}
+            value={offset.y}
+            max={srcDims ? Math.max(0, outPx - srcDims.h) : 0}
+            onChange={v => onOffsetChange({ ...offset, y: v })}
+          />
+        </div>
       </section>
 
       {/* Fill mode */}
@@ -206,6 +226,26 @@ function NumberInput({ label, tooltip, value, onChange, min = 0, max, step = 1 }
           if (!isNaN(v)) onChange(v)
         }}
         className="w-[80px] text-[13px] text-right border border-input rounded px-2 py-[3px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+      />
+    </div>
+  )
+}
+
+function OffsetInput({ label, tooltip, value, max, onChange }) {
+  return (
+    <div className="flex items-center gap-2" title={tooltip}>
+      <span className="text-[12px] text-muted-foreground flex-1">{label}</span>
+      <input
+        type="number"
+        min={0}
+        max={max}
+        step={1}
+        value={Math.round(value)}
+        onChange={e => {
+          const v = parseInt(e.target.value, 10)
+          if (!isNaN(v)) onChange(v)
+        }}
+        className="w-[72px] text-[12px] text-right border border-input rounded px-2 py-[2px] bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
       />
     </div>
   )

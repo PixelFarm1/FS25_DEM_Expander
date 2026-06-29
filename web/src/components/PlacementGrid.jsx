@@ -15,29 +15,29 @@ const LABELS = {
   'bottom-right': '↘',
 }
 
-export default function PlacementGrid({ value, onChange }) {
+export default function PlacementGrid({ activePreset, onChange }) {
   return (
     <div className="grid grid-cols-3 gap-1 w-fit">
       {/* Row 0 */}
-      <Cell pos="top-left"    value={value} onChange={onChange} />
+      <Cell pos="top-left"    activePreset={activePreset} onChange={onChange} />
       <div />  {/* empty centre-top */}
-      <Cell pos="top-right"   value={value} onChange={onChange} />
+      <Cell pos="top-right"   activePreset={activePreset} onChange={onChange} />
 
       {/* Row 1 */}
       <div />  {/* empty mid-left */}
-      <Cell pos="center"      value={value} onChange={onChange} />
+      <Cell pos="center"      activePreset={activePreset} onChange={onChange} />
       <div />  {/* empty mid-right */}
 
       {/* Row 2 */}
-      <Cell pos="bottom-left"  value={value} onChange={onChange} />
+      <Cell pos="bottom-left"  activePreset={activePreset} onChange={onChange} />
       <div />  {/* empty centre-bottom */}
-      <Cell pos="bottom-right" value={value} onChange={onChange} />
+      <Cell pos="bottom-right" activePreset={activePreset} onChange={onChange} />
     </div>
   )
 }
 
-function Cell({ pos, value, onChange }) {
-  const active = value === pos
+function Cell({ pos, activePreset, onChange }) {
+  const active = activePreset === pos
   return (
     <button
       title={pos.replace('-', ' ')}
