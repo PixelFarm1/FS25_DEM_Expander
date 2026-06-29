@@ -1,6 +1,18 @@
 import { useEffect, useRef } from 'react'
 import { Badge } from './ui/badge.jsx'
 
+const URL_RE = /(https?:\/\/[^\s]+)/g
+
+function renderLine(line) {
+  const parts = line.split(URL_RE)
+  if (parts.length === 1) return line
+  return parts.map((part, i) =>
+    URL_RE.test(part)
+      ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">{part}</a>
+      : part
+  )
+}
+
 export default function LogPanel({ logs, t }) {
   const bottomRef = useRef(null)
 
@@ -39,7 +51,7 @@ export default function LogPanel({ logs, t }) {
                     : 'text-foreground/80'
                   }
                 >
-                  {line}
+                  {renderLine(line)}
                 </div>
               )
             })}

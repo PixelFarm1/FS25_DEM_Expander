@@ -62,6 +62,12 @@ export default function App() {
 
   const appendLog = useCallback((msg) => setLogs(prev => [...prev, msg]), [])
 
+  // Greeting on mount
+  useEffect(() => {
+    appendLog('👋 Welcome to FS25 DEM Expander! Drop in your 16-bit DEM PNG and expand your map to 4×, 8×, or 16× size — right in the browser, no install needed.')
+    appendLog('Want to learn more? Visit the GitHub repo: https://github.com/PixelFarm1/FS25_DEM_Expander')
+  }, [appendLog])
+
   useEffect(() => {
     workerRef.current = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' })
 
