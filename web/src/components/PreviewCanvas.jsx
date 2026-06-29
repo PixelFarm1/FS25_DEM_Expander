@@ -36,8 +36,8 @@ export default function PreviewCanvas({
     canvas.height = ch
     ctx.clearRect(0, 0, cw, ch)
 
-    // ── State 1: no file uploaded ──────────────────────────────────────────
-    if (!srcBitmap && !outputBitmap) {
+    // ── State 1: no file uploaded (or still loading) ──────────────────────
+    if (!srcDims && !outputBitmap) {
       ctx.fillStyle = '#a0988e'
       ctx.font = '13px Inter, sans-serif'
       ctx.textAlign = 'center'
@@ -82,7 +82,13 @@ export default function PreviewCanvas({
     const srcDrawW = srcDims.w * scale
     const srcDrawH = srcDims.h * scale
 
-    ctx.drawImage(srcBitmap, srcDrawX, srcDrawY, srcDrawW, srcDrawH)
+    if (srcBitmap) {
+      ctx.drawImage(srcBitmap, srcDrawX, srcDrawY, srcDrawW, srcDrawH)
+    } else {
+      // Browser couldn't create a bitmap (common for 16-bit PNGs) — draw a labelled placeholder
+      ctx.fillStyle = '#b8c8a8'
+      ctx.fillRect(srcDrawX, srcDrawY, srcDrawW, srcDrawH)
+    }
 
     // Red border around source
     ctx.strokeStyle = COLOR_BORDER

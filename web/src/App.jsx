@@ -60,32 +60,31 @@ export default function App() {
 
   // When file changes: read dimensions and create a preview bitmap
   useEffect(() => {
-    if (!srcBitmap) return
-    return () => srcBitmap.close?.()
-  }, [srcBitmap])
-
-  useEffect(() => {
-    if (!outputBitmap) return
-    return () => outputBitmap.close?.()
-  }, [outputBitmap])
-
-  useEffect(() => {
     if (!file) {
       setSrcDims(null)
       setSrcBitmap(null)
       setOutputBitmap(null)
       return
     }
-    // Parse PNG dimensions from IHDR (bytes 16–23)
-    file.arrayBuffer().then(buf => {
-      const view = new DataView(buf)
-      setSrcDims({ w: view.getUint32(16), h: view.getUint32(20) })
-    })
-    // Create bitmap for visual preview (browser normalises 16-bit → 8-bit display)
-    createImageBitmap(file).then(bmp => setSrcBitmap(bmp))
-    // Clear any previous output when a new file is loaded
+
     setOutputBitmap(null)
     setZipBuffer(null)
+
+    // Read dims and bitmap together so PreviewCanvas never sees one without the other
+    const dimsPromise = file.arrayBuffer().then(buf => {
+      const view = new DataView(buf)
+      return { w: view.getUint32(16), h: view.getUint32(20) }
+    })
+
+    // createImageBitmap may reject for 16-bit grayscale in some browsers — fall back gracefully
+    const bitmapPromise = createImageBitmap(file).catch(() => null)
+
+    Promise.all([dimsPromise, bitmapPromise]).then(([dims, bmp]) => {
+      setSrcDims(dims)
+      setSrcBitmap(bmp)  // may be null if browser can't bitmap a 16-bit PNG
+    }).catch(err => {
+      console.error('Failed to read DEM file:', err)
+    })
   }, [file])
 
   async function handleRun() {
