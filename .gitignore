@@ -1,4 +1,32 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
+
+# Project planning (local only)
+projectInstructions.md
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Vite
 *.local
