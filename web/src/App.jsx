@@ -135,6 +135,8 @@ export default function App() {
     setLogs([])
     appendLog('Starting...')
 
+    window.gtag?.('event', 'run_processing', { target_size: targetSize, fill_mode: fillMode })
+
     const imageBuffer = await file.arrayBuffer()
     workerRef.current.postMessage(
       { type: 'RUN', payload: { imageBuffer, targetSize, offset, fillMode, fillElevation, heightScale, unitsPerPixel } },
@@ -144,6 +146,7 @@ export default function App() {
 
   function handleDownload() {
     if (!zipBuffer) return
+    window.gtag?.('event', 'download_zip')
     const url = URL.createObjectURL(new Blob([zipBuffer], { type: 'application/zip' }))
     const a = document.createElement('a')
     a.href = url
