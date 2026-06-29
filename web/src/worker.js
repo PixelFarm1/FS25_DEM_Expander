@@ -25,15 +25,18 @@ self.onmessage = async (e) => {
     if (channels !== 1) log(`Warning: source has ${channels} channels. Expected grayscale (1).`)
 
     // ── 2. Read source pixels as Uint16 ──────────────────────────────────────
-    // fast-png returns Uint8Array with 2 bytes per pixel for 16-bit grayscale (big-endian)
-    const bytesPerPx = (depth === 16) ? 2 : 1
-    const srcPixels  = new Uint16Array(srcW * srcH)
-
-    for (let i = 0; i < srcW * srcH; i++) {
-      if (bytesPerPx === 2) {
-        srcPixels[i] = (src.data[i * 2] << 8) | src.data[i * 2 + 1]
-      } else {
-        srcPixels[i] = src.data[i] * 257  // scale 8-bit → 16-bit
+    // fast-png returns Uint16Array for 16-bit images (one element per pixel)
+    // and Uint8Array for 8-bit images.
+    const srcPixels = new Uint16Array(srcW * srcH)
+    if (depth === 16) {
+      // src.data is already Uint16Array — copy directly
+      for (let i = 0; i < srcW * srcH; i++) {
+        srcPixels[i] = src.data[i]
+      }
+    } else {
+      // 8-bit fallback: scale to 16-bit range
+      for (let i = 0; i < srcW * srcH; i++) {
+        srcPixels[i] = src.data[i] * 257
       }
     }
 
@@ -94,13 +97,9 @@ self.onmessage = async (e) => {
     }
 
     // ── 9. Encode output as 16-bit grayscale PNG ──────────────────────────────
+    // fast-png expects Uint16Array (one element per pixel) for depth=16
     log('Encoding output PNG...')
-    const outData = new Uint8Array(outSize * outSize * 2)
-    for (let i = 0; i < outPixels.length; i++) {
-      outData[i * 2]     = (outPixels[i] >> 8) & 0xFF
-      outData[i * 2 + 1] =  outPixels[i]       & 0xFF
-    }
-    const outPng = encode({ width: outSize, height: outSize, data: outData, depth: 16, channels: 1 })
+    const outPng = encode({ width: outSize, height: outSize, data: outPixels, depth: 16, channels: 1 })
 
     // ── 10. Build summary text ─────────────────────────────────────────────────
     const summary = buildSummary({ srcW, srcH, outSize, targetSize, heightScale, unitsPerPixel, placement, fillMode, fillElevation })
