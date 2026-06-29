@@ -11,7 +11,8 @@ self.onmessage = async (e) => {
       targetSize,
       placement,
       fillMode,
-      fillPixelValue,
+      fillElevation,
+      heightScale,
       unitsPerPixel,
     } = payload
 
@@ -52,9 +53,10 @@ self.onmessage = async (e) => {
 
     // ── 6. Initial fill ───────────────────────────────────────────────────────
     if (fillMode === 'flat') {
-      const clamped = Math.max(0, Math.min(65535, Math.round(fillPixelValue)))
+      const pixelValue = Math.round((fillElevation / heightScale) * 65535)
+      const clamped    = Math.max(0, Math.min(65535, pixelValue))
       outPixels.fill(clamped)
-      log(`Flat fill: pixel value ${clamped}`)
+      log(`Flat fill: ${fillElevation}m → pixel value ${clamped} (heightScale ${heightScale}m)`)
     }
     // edge-extend and mirror are filled per-pixel after source placement
 
@@ -100,7 +102,7 @@ self.onmessage = async (e) => {
     const outPng = encode({ width: outSize, height: outSize, data: outPixels, depth: 16, channels: 1 })
 
     // ── 10. Build summary text ─────────────────────────────────────────────────
-    const summary = buildSummary({ srcW, srcH, outSize, targetSize, unitsPerPixel, placement, fillMode, fillPixelValue })
+    const summary = buildSummary({ srcW, srcH, outSize, targetSize, heightScale, unitsPerPixel, placement, fillMode, fillElevation })
 
     // ── 11. Create ZIP ────────────────────────────────────────────────────────
     log('Creating ZIP...')
@@ -142,7 +144,7 @@ function mirrorCoord(c, size) {
   return c
 }
 
-function buildSummary({ srcW, srcH, outSize, targetSize, unitsPerPixel, placement, fillMode, fillPixelValue }) {
+function buildSummary({ srcW, srcH, outSize, targetSize, heightScale, unitsPerPixel, placement, fillMode, fillElevation }) {
   const lines = [
     '=== FS25 DEM Expander — Output Summary ===',
     '',
@@ -150,9 +152,10 @@ function buildSummary({ srcW, srcH, outSize, targetSize, unitsPerPixel, placemen
     `Output DEM:        ${outSize}×${outSize} px`,
     `Target map size:   ${targetSize}m × ${targetSize}m`,
     `Placement:         ${placement}`,
-    `Fill mode:         ${fillMode}${fillMode === 'flat' ? ` (pixel value ${fillPixelValue})` : ''}`,
+    `Fill mode:         ${fillMode}${fillMode === 'flat' ? ` (${fillElevation}m)` : ''}`,
     '',
     '--- Giants Editor (terrain properties) ---',
+    `heightScale:       ${heightScale}`,
     `unitsPerPixel:     ${unitsPerPixel}`,
     '',
     '--- mapUS.xml ---',
@@ -160,8 +163,7 @@ function buildSummary({ srcW, srcH, outSize, targetSize, unitsPerPixel, placemen
     `map height:        ${targetSize}`,
     '',
     'Replace your existing DEM.png with DEM_expanded.png.',
-    'Set unitsPerPixel in Giants Editor to match the value above.',
-    'Set heightScale in Giants Editor to match your original map (unchanged).',
+    'Set heightScale and unitsPerPixel in Giants Editor to match the values above.',
   ]
   return lines.join('\n')
 }

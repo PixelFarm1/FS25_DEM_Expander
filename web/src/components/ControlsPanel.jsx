@@ -21,7 +21,8 @@ export default function ControlsPanel({
   targetSize, setTargetSize,
   placement, setPlacement,
   fillMode, setFillMode,
-  fillPixelValue, setFillPixelValue,
+  fillElevation, setFillElevation,
+  heightScale, setHeightScale,
   unitsPerPixel, setUnitsPerPixel,
   onRun, onDownload,
   isRunning, hasResult,
@@ -117,15 +118,24 @@ export default function ControlsPanel({
         </div>
 
         {fillMode === 'flat' && (
-          <NumberInput
-            label={t.fillPixelValue}
-            tooltip={t.fillPixelTooltip}
-            value={fillPixelValue}
-            onChange={setFillPixelValue}
-            min={0}
-            max={65535}
-            step={1}
-          />
+          <div className="mt-2 rounded border border-border bg-background px-2 py-2 flex flex-col gap-2">
+            <NumberInput
+              label={t.heightScale}
+              tooltip={t.heightScaleTooltip}
+              value={heightScale}
+              onChange={setHeightScale}
+              min={1}
+              step={10}
+            />
+            <NumberInput
+              label={t.fillElevation}
+              tooltip={t.fillElevTooltip}
+              value={fillElevation}
+              onChange={setFillElevation}
+              min={0}
+              step={1}
+            />
+          </div>
         )}
       </section>
 

@@ -10,7 +10,8 @@ export default function App() {
   const [targetSize,     setTargetSize]     = useState(4096)
   const [placement,      setPlacement]      = useState('center')
   const [fillMode,       setFillMode]       = useState('flat')
-  const [fillPixelValue, setFillPixelValue] = useState(0)
+  const [fillElevation,  setFillElevation]  = useState(0)
+  const [heightScale,    setHeightScale]    = useState(300)
   const [unitsPerPixel,  setUnitsPerPixel]  = useState(2)
   const [lang,           setLang]           = useState('en')
 
@@ -97,7 +98,7 @@ export default function App() {
 
     const imageBuffer = await file.arrayBuffer()
     workerRef.current.postMessage(
-      { type: 'RUN', payload: { imageBuffer, targetSize, placement, fillMode, fillPixelValue, unitsPerPixel } },
+      { type: 'RUN', payload: { imageBuffer, targetSize, placement, fillMode, fillElevation, heightScale, unitsPerPixel } },
       [imageBuffer]
     )
   }
@@ -155,7 +156,8 @@ export default function App() {
             targetSize={targetSize} setTargetSize={setTargetSize}
             placement={placement} setPlacement={setPlacement}
             fillMode={fillMode} setFillMode={setFillMode}
-            fillPixelValue={fillPixelValue} setFillPixelValue={setFillPixelValue}
+            fillElevation={fillElevation} setFillElevation={setFillElevation}
+            heightScale={heightScale} setHeightScale={setHeightScale}
             unitsPerPixel={unitsPerPixel} setUnitsPerPixel={setUnitsPerPixel}
             onRun={handleRun}
             onDownload={handleDownload}
