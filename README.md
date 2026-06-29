@@ -2,7 +2,7 @@
 
 A free, browser-based tool for expanding a Farming Simulator 25 terrain heightmap (DEM) from 2× to 4×, 8×, or 16× map size. No installation required — runs entirely in your browser.
 
-**[Try it here → https://pixelfarm1.github.io/FS25_2xTo4x/](https://pixelfarm1.github.io/FS25_2xTo4x/)**
+**[Try it here → https://pixelfarm1.github.io/FS25_DEM_Expander/](https://pixelfarm1.github.io/FS25_DEM_Expander/)**
 
 ---
 
